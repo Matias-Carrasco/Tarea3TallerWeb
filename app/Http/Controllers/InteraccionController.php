@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Interaccion;
+use App\Models\Perro;
 use App\Http\Requests\StoreInteraccionRequest;
 use App\Http\Requests\UpdateInteraccionRequest;
 
@@ -42,9 +43,12 @@ class InteraccionController extends Controller
             'preferencia' => 'required'
         ]);
 
-        $id_perros = DB::table('perros')->pluck('id')->toArray();
+        
+        $id_perros = Perro::all()->pluck('id')->toArray();
         $interesado = $request->input('perro_interesado_id');
         $candidato = $request->input('perro_candidato_id');
+        $preferencia = $request->input('preferencia');
+        $patron = "/^(?:R|A|r|a)$/";
 
         if(!(in_array($interesado, $id_perros))){
             return response()->json('El perro que se esta intentando ingresar no existe', status:400);
@@ -57,11 +61,24 @@ class InteraccionController extends Controller
         if($candidato == $interesado){
             return response()->json('No se permite ingresar el mismo perro como interesado y candidato', status:400);
         }
-  
+
+        if(preg_match($patron,$preferencia)!=1){
+            return response()->json('La preferencia solo pude ser de tipo (A|R)', status:400);
+        }
+
+        $lista_interesados = Interaccion::where('perro_interesado_id',$interesado)->get();
+        
+        foreach ($lista_interesados as $inte) {
+            if(($inte->perro_candidato_id) == $candidato && ($inte->perro_interesado_id) == $interesado){
+                return response()->json('Ya existe la esta interaccion', status:400);  
+            }
+        }
+
+        
         $interaccion = new Interaccion;
-        $interaccion->nombre = $request->input('perro_interesado_id');
-        $interaccion->foto_url = $request->input('perro_candidato_id');
-        $interaccion->descripcion = $request->input('preferencia');
+        $interaccion->perro_interesado_id = $interesado;
+        $interaccion->perro_candidato_id = $candidato;
+        $interaccion->preferencia = $candidato;
         $interaccion->save();
         return response()->json($interaccion, status:201);
     }
@@ -95,18 +112,18 @@ class InteraccionController extends Controller
      * @param  \App\Models\Interaccion  $interaccion
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateInteraccionRequest $request, $id)
+    public function update(UpdateInteraccionRequest $request, $interesado)
     {
 
         $this->validate($request, [
-            'perro_interesado_id' => 'required',
             'perro_candidato_id' => 'required',
             'preferencia' => 'required'
         ]);
 
-        $id_perros = DB::table('perros')->pluck('id')->toArray();
-        $interesado = $request->input('perro_interesado_id');
+        $id_perros = Perro::all()->pluck('id')->toArray();
         $candidato = $request->input('perro_candidato_id');
+        $preferencia = $request->input('preferencia');
+        $patron = "/^(?:R|A|r|a)$/";
 
         if(!(in_array($interesado, $id_perros))){
             return response()->json('El perro que se esta intentando ingresar no existe', status:400);
@@ -120,12 +137,25 @@ class InteraccionController extends Controller
             return response()->json('No se permite ingresar el mismo perro como interesado y candidato', status:400);
         }
 
+        if(preg_match($patron,$preferencia)!=1){
+            return response()->json('La preferencia solo pude ser de tipo (A|R)', status:400);
+        }
 
-        $interaccion = Interaccion::findorFail($id);
-        $interaccion->nombre = $request->input('perro_interesado_id');
-        $interaccion->foto_url = $request->input('perro_candidato_id');
-        $interaccion->descripcion = $request->input('preferencia');
-        $interaccion->save();
+        $lista_interesados = Interaccion::where('perro_interesado_id',$interesado)->get();
+        
+        foreach ($lista_interesados as $inte) {
+            if(($inte->perro_candidato_id) == $candidato && ($inte->perro_interesado_id) == $interesado){
+                if(($inte->preferencia) == $preferencia){
+                    return response()->json('Ya existe la esta interaccion', status:400);
+                }
+            }
+        }
+        
+        $interaccion = Interaccion::findorFail($interesado);
+        $interaccion->perro_interesado_id = $interesado;
+        $interaccion->perro_candidato_id = $candidato;
+        $interaccion->preferencia = $preferencia;
+        $interaccion->update();
         return response()->json($interaccion, status:201);
     }
 

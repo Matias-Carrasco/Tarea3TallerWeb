@@ -24,7 +24,6 @@ class UpdateInteraccionRequest extends FormRequest
     public function rules()
     {
         return [
-            'perro_interesado_id' => 'required',
             'perro_candidato_id' => 'required',
             'preferencia' => 'required'
         ];

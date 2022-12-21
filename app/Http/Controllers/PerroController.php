@@ -92,7 +92,7 @@ class PerroController extends Controller
         $perro->nombre = $request->input('nombre');
         $perro->foto_url = $request->input('foto_url');
         $perro->descripcion = $request->input('descripcion');
-        $perro->save();
+        $perro->update();
         return response()->json($perro, status:201);
     }
 
