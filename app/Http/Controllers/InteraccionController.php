@@ -78,7 +78,7 @@ class InteraccionController extends Controller
         $interaccion = new Interaccion;
         $interaccion->perro_interesado_id = $interesado;
         $interaccion->perro_candidato_id = $candidato;
-        $interaccion->preferencia = $candidato;
+        $interaccion->preferencia = $preferencia;
         $interaccion->save();
         return response()->json($interaccion, status:201);
     }
