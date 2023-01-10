@@ -62,6 +62,13 @@ class PerroController extends Controller
         return Perro::findorFail($id);
     }
 
+    public function random()
+    {
+        $databaselength = count(Perro::orderBy('created_at', 'asc')->get());
+        $rand = rand(2, $databaselength-1);
+        return Perro::findorFail($rand);
+    }
+
     /**
      * Show the form for editing the specified resource.
      *
@@ -92,7 +99,7 @@ class PerroController extends Controller
         $perro->nombre = $request->input('nombre');
         $perro->foto_url = $request->input('foto_url');
         $perro->descripcion = $request->input('descripcion');
-        $perro->update();
+        $perro->save();
         return response()->json($perro, status:201);
     }
 

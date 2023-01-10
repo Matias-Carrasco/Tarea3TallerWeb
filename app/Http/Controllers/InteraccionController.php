@@ -155,7 +155,7 @@ class InteraccionController extends Controller
         $interaccion->perro_interesado_id = $interesado;
         $interaccion->perro_candidato_id = $candidato;
         $interaccion->preferencia = $preferencia;
-        $interaccion->update();
+        $interaccion->save();
         return response()->json($interaccion, status:201);
     }
 
@@ -171,5 +171,48 @@ class InteraccionController extends Controller
         if($interaccion->delete()){
             return response()->json('interaccion eliminada correctamente', status:201);
         }
+    }
+
+    public function cambiarInteraccion(UpdateInteraccionRequest $request){
+        
+        
+        $this->validate($request, [
+            'perro_interesado_id' => 'required',
+            'perro_candidato_id' => 'required',
+            'preferencia' => 'required'
+        ]);
+
+         
+        $id_perros = Perro::all()->pluck('id')->toArray();
+        $interesado = $request->input('perro_interesado_id');
+        $candidato = $request->input('perro_candidato_id');
+        $preferencia = $request->input('preferencia');
+        $patron = "/^(?:R|A|r|a)$/";
+
+        
+        $interacciones = Interaccion::orderBy('created_at', 'asc')->get();
+
+        foreach ($interacciones as $inte) {
+            if(($inte->perro_candidato_id) == $candidato && ($inte->perro_interesado_id) == $interesado){
+                if(($inte->preferencia) == $preferencia){
+                    return response()->json('Ya existe la esta interaccion', status:400);
+                }else{
+
+                    $interaccion = Interaccion::findorFail($inte->id);
+                    
+                    $interaccion->perro_interesado_id = $interesado;
+                    $interaccion->perro_candidato_id = $candidato;
+                    $interaccion->preferencia = $preferencia;
+                    $interaccion->save();
+
+                    return response()->json($interaccion, status:201);
+
+                }                
+            }
+        }
+
+        return response()->json("Error", status:404);
+
+        
     }
 }

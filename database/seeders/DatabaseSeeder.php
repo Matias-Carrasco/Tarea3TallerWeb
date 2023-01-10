@@ -17,16 +17,21 @@ class DatabaseSeeder extends Seeder
     {
         $faker = \Faker\Factory::create();
 
-        $this->insertarPerros($faker, 50);
+        $this->insertarPerros($faker, 150);
         $this->insertarInteraccions($faker, 250);
     }
 
     private function insertarPerros($faker, $cantidad)
     {
+
         foreach (range(1,$cantidad) as $index) {
+            $api = 'https://dog.ceo/api/breeds/image/random';
+            $response = json_decode(file_get_contents($api));
+            $fotos = $response->message;
+
             DB::table('perros')->insert([
                 'nombre' => $faker->firstname(),
-                'foto_url' => "https://placeholder.com/dog/{$index}",
+                'foto_url' => $fotos,
                 'descripcion' => $faker->sentence(),
                 'created_at' => now(),
                 'updated_at' => now()

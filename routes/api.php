@@ -20,5 +20,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/perros/random', [PerroController::class, 'random']);
+Route::post('/cambiarInteraccion', [InteraccionController::class, 'cambiarInteraccion']);
+
 Route::resource('perros',PerroController::class);
 Route::resource('interaccions',InteraccionController::class);
